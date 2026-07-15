@@ -1,0 +1,191 @@
+/* ROS — color tokens.
+   Refined from the shipped app's dark-red/black scheme into a calmer, more
+   "chambers & law-report" palette: deep navy for authority, a single heritage
+   crimson used sparingly as accent (not as a dominant background), warm paper
+   neutrals instead of clinical gray, muted brass + teal lifted from the emblem
+   (laurel + circuit motif). */
+:root {
+  /* ---- base palette ---- */
+  --navy-950: #0e1a2b;
+  --navy-900: #16273f;
+  --navy-800: #1e3350;
+  --navy-700: #2a4568;
+  --navy-500: #4d6a90;
+  --navy-300: #93aac6;
+  --navy-100: #dde5ef;
+
+  --crimson-800: #6e1b24;
+  --crimson-700: #82212b; /* heritage accent, softened from source #8c1d1d */
+  --crimson-600: #9c2b36;
+  --crimson-100: #f6e6e6;
+  --crimson-50: #fbf1f1;
+
+  --brass-700: #93732f;
+  --brass-500: #b8965a; /* laurel gold, from the emblem */
+  --brass-300: #d9c393;
+  --brass-100: #f2ead9;
+
+  --teal-700: #1f6b74;
+  --teal-500: #3a8f98; /* circuit-node teal, from the emblem */
+  --teal-100: #dcedef;
+
+  --paper-0: #ffffff;
+  --paper-50: #faf8f4;   /* warm off-white page background, replaces #f3f3f3 */
+  --paper-100: #f3efe6;
+  --paper-200: #e8e2d4;
+
+  --ink-900: #1b2027;
+  --ink-700: #3a4149;
+  --ink-500: #5c6570;
+  --ink-400: #7a828c;
+  --ink-300: #a3aab3;
+  --ink-200: #c7ccd2;
+  --ink-100: #e3e6ea;
+
+  --success-600: #1f7a4d;
+  --success-100: #e2f3e9;
+  --warning-600: #a5680c;
+  --warning-100: #faf0dc;
+  --error-600: #a02330;
+  --error-100: #fbeaec;
+
+  /* ---- semantic aliases ---- */
+  --color-bg-page: var(--paper-50);
+  --color-bg-surface: var(--paper-0);
+  --color-bg-surface-sunken: var(--paper-100);
+  --color-bg-header: var(--navy-900);
+  --color-bg-header-border: var(--crimson-700);
+
+  --color-text-primary: var(--ink-900);
+  --color-text-secondary: var(--ink-500);
+  --color-text-muted: var(--ink-400);
+  --color-text-oninverse: #f4f6f8;
+  --color-text-oninverse-muted: #aab4c0;
+
+  --color-border: var(--ink-100);
+  --color-border-strong: var(--ink-200);
+
+  --color-brand-primary: var(--navy-900);
+  --color-brand-accent: var(--crimson-700);
+  --color-brand-gold: var(--brass-500);
+  --color-brand-teal: var(--teal-500);
+
+  --color-link: var(--navy-800);
+  --color-link-hover: var(--crimson-700);
+
+  --color-focus-ring: var(--brass-500);
+
+  --color-success: var(--success-600);
+  --color-success-bg: var(--success-100);
+  --color-warning: var(--warning-600);
+  --color-warning-bg: var(--warning-100);
+  --color-error: var(--error-600);
+  --color-error-bg: var(--error-100);
+}
+/* ROS — type tokens. Lora (serif) for judgment text / editorial headings —
+   reads like a law report; Plus Jakarta Sans (grotesque) for UI chrome. Both
+   inherited from the shipped app (already the right register for a court
+   research tool) — refined scale + weight use, not replaced. */
+:root {
+  --font-serif: 'Lora', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  /* No mono font file was in the attached codebase (it uses no mono type at
+     all — this token is an intentional addition for code/citation snippets).
+     Points at IBM Plex Mono; falls back to the system mono stack until a
+     webfont is supplied. */
+  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* scale */
+  --text-display: 2.5rem;   /* 40px — hub title */
+  --text-h1: 1.75rem;       /* 28px */
+  --text-h2: 1.375rem;      /* 22px */
+  --text-h3: 1.125rem;      /* 18px */
+  --text-body-lg: 1rem;     /* 16px */
+  --text-body: 0.9rem;      /* 14.4px — default UI body */
+  --text-body-sm: 0.8125rem;/* 13px */
+  --text-caption: 0.75rem;  /* 12px */
+  --text-eyebrow: 0.6875rem;/* 11px, uppercase label */
+
+  --leading-tight: 1.25;
+  --leading-snug: 1.4;
+  --leading-normal: 1.6;   /* body-text / judgment reading */
+
+  --tracking-eyebrow: 0.08em;
+  --tracking-wide: 0.05em;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+}
+/* ROS — spacing, radius, and z-index tokens. */
+:root {
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* the shipped app used inconsistent radii per-component (6/8/10/12/16px) —
+     consolidated into one scale, applied deliberately per surface type. */
+  --radius-sm: 6px;    /* inputs, chips, small buttons */
+  --radius-md: 8px;    /* cards, panes */
+  --radius-lg: 12px;   /* stat cards, dialogs */
+  --radius-pill: 999px;/* pills, avatar */
+
+  --header-height: 56px;
+  --mobile-tabs-height: 48px;
+
+  --z-header: 100; /* @kind other */
+  --z-drawer: 90; /* @kind other */
+  --z-floating: 80; /* @kind other */
+  --z-dialog: 200; /* @kind other */
+}
+/* ROS — elevation, border and motion tokens.
+   The shipped app mixed heavy drop-shadows (0 8px 32px rgba(0,0,0,0.15) on the
+   chat dialog) with shadow:none flat cards elsewhere. Standardised here: flat
+   bordered cards at rest, one soft elevation step for anything that floats
+   above the page (dialogs, the Ask ROS popover, dropdowns). */
+:root {
+  --shadow-none: none;
+  --shadow-sm: 0 1px 2px rgba(22, 39, 63, 0.06);
+  --shadow-card: 0 1px 3px rgba(22, 39, 63, 0.08), 0 1px 2px rgba(22, 39, 63, 0.04);
+  --shadow-float: 0 12px 32px rgba(14, 26, 43, 0.18), 0 2px 8px rgba(14, 26, 43, 0.08);
+
+  --border-width-sm: 1px;
+  --border-width-md: 1.5px;
+  --border-width-accent: 3px; /* header underline, section rule */
+
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1); /* @kind other */
+  --duration-fast: 120ms; /* @kind other */
+  --duration-base: 180ms; /* @kind other */
+  --duration-slow: 280ms; /* @kind other */
+}
+
+/* ---- ROS design refresh: token-driven overrides over the legacy HEAD_CSS ---- */
+body { background: var(--color-bg-page) !important; }
+.sec {
+  color: var(--color-brand-accent) !important;
+  border-left: 3px solid var(--color-brand-accent) !important;
+}
+/* Ask ROS: a normal accent button — the glow/pulse is off-brand (see readme). */
+.ask-ross-btn-glowing { animation: none !important; box-shadow: var(--shadow-float) !important; }
+/* Consolidated surfaces: flat bordered cards, one soft float step. */
+.q-card { box-shadow: var(--shadow-card); }
+.pane { border-radius: var(--radius-md) !important; }
+.bg-gray-100 { background-color: var(--paper-100) !important; }
+.bg-gray-50 { background-color: var(--paper-50) !important; }
+.bg-amber-100 { background-color: var(--brass-100) !important; }
+/* Chips/topic pills: brass family instead of loud yellow. */
+.q-badge.bg-yellow-7, .q-badge[class*="yellow"] { background: var(--brass-300) !important; color: var(--ink-900) !important; }
+
+/* Compact 'Attach' uploader inline with chat inputs (QUploader is tall by default). */
+.attach-upload { max-height: 40px; overflow: hidden; border-radius: var(--radius-sm); }
+.attach-upload .q-uploader__header { min-height: 40px; padding: 2px 4px; background: transparent; }
+.attach-upload .q-uploader__title { font-size: 12px; white-space: nowrap; }
+.attach-upload .q-uploader__subtitle, .attach-upload .q-uploader__list { display: none; }

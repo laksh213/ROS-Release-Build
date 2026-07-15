@@ -1,0 +1,21 @@
+services:
+  roscribe:
+    build: .
+    container_name: roscribe_v2
+    ports:
+      # Loopback only — put a reverse proxy or Tailscale in front to go public.
+      - "127.0.0.1:8080:8080"
+    environment:
+      - ROSCRIBE_HOST=0.0.0.0
+      - ROSCRIBE_PORT=8080
+      - LLAMACPP_MODEL_PATH=/app/models/Qwen3-4B-Instruct-2507-Q4_K_M.gguf
+    env_file:
+      - .env
+    volumes:
+      # Corpus, SQLite, Chroma, parsed-document cache
+      - ./data:/app/data
+      # GGUF fetched on the host via scripts/get_model.py (read-only in the container)
+      - ./models:/app/models:ro
+      # HuggingFace cache so the embedder isn't re-downloaded on rebuilds
+      - ~/.cache/huggingface:/home/app/.cache/huggingface
+    restart: unless-stopped

@@ -1,0 +1,30 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments
+.venv/
+venv/
+ENV/
+env/
+.env
+.env_smart
+
+# NiceGUI Local Cache
+.nicegui/
+
+# Local databases and documents
+data/roscribe.db
+data/auth.log
+data/sc_judgements/*
+data/chroma/*
+!data/sc_judgements/.gitkeep
+!data/chroma/.gitkeep
+
+# OS generated files
+.DS_Store
+.DS_Store?
+ehthumbs.db
+Icon?
+Thumbs.db

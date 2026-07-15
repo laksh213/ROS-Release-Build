@@ -1,0 +1,23 @@
+[project]
+name = "roscribe"
+version = "2.0.0"
+description = "Citation-grounded, local-first legal research over Supreme Court of Sri Lanka judgements"
+requires-python = ">=3.12"
+license = { file = "LICENSE" }
+
+[tool.ruff]
+line-length = 110
+target-version = "py312"
+extend-exclude = ["metadata_extractor", ".venv", "data"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+ignore = [
+  "E501",   # long lines in legal strings/prompts are deliberate
+  "B008",   # NiceGUI idiom: function calls in argument defaults
+  "UP038",  # isinstance tuples kept for 3.12 compat style
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

@@ -1,0 +1,41 @@
+# ROScribe v2 — top-level dependencies (ranges).
+# Reproducible installs: use the pinned lockfile instead —
+#   pip install -r requirements.lock
+
+# --- LLM (pluggable; local GGUF via llama-cpp by default) ---
+llama-cpp-python>=0.3.25  # runs the local GGUF (Qwen3-4B-Instruct by default)
+openai>=1.40              # talks to Ollama / any OpenAI-compatible endpoint
+anthropic>=0.40           # optional: only when LLM_PROVIDER=anthropic
+json-repair>=0.30         # repair malformed/truncated JSON from small local models
+
+# --- Scraper ---
+requests>=2.31
+beautifulsoup4>=4.12
+
+# --- Document parsing: Docling (layout, reading order, OCR, formatting) ---
+# Replaces v1's PyMuPDF + pytesseract + python-docx readers. OCR is driven
+# through Docling's Tesseract integration (system tesseract + eng/sin/tam packs).
+docling>=2.100
+huggingface_hub>=0.25     # model downloads (scripts/get_model.py)
+
+# --- Embeddings (local, multilingual EN / Sinhala / Tamil) ---
+# lite profile (default): intfloat/multilingual-e5-small — fits 8 GB laptops
+# quality profile:        BAAI/bge-m3
+sentence-transformers>=3.2
+
+# --- Storage (zero-config, local files — no server) ---
+chromadb>=0.5             # embedded vector DB; SQLite ships with Python
+
+# --- Schema / config / auth / UI ---
+pydantic>=2.9
+python-dotenv>=1.0
+argon2-cffi>=23.1         # password hashing for ROSCRIBE_USERS
+nicegui>=3.12             # the workspace UI (app/workspace.py)
+
+# --- Dev ---
+pytest>=8.0
+ruff>=0.8
+
+# --- Optional (quality profile only; NOT installed by default) ---
+# FlagEmbedding>=1.3      # BAAI/bge-reranker-v2-m3 neural reranker (~2.3 GB);
+#                         # v2 uses FTS5+dense RRF fusion instead on lite.
