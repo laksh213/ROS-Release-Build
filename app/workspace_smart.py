@@ -4298,7 +4298,7 @@ def build_workspace(demo: bool = False, initial_case: str = None):
                             label="LLM Provider"
                         ).classes("w-full")
                         
-                        env_model = "claude-3-5-haiku-20241022" if env_provider == "anthropic" else settings.llamacpp_model_path
+                        env_model = settings.anthropic_model if env_provider == "anthropic" else settings.llamacpp_model_path
                         model_input = ui.input("Model or GGUF Path", value=env_model).classes("w-full")
                         
                         env_base_url = settings.openai_base_url if "openai" in settings.llm_provider.lower() else ""
@@ -4341,7 +4341,7 @@ def build_workspace(demo: bool = False, initial_case: str = None):
                                 is_cur_admin = (app.storage.user.get("username") or "").lower() == "admin"
                                 apikey_input.value = (settings.openai_api_key if "openai" in settings.llm_provider.lower() else os.getenv("OPENAI_API_KEY") or "") if is_cur_admin else ""
                             else:  # anthropic
-                                model_input.value = "claude-3-5-haiku-20241022"
+                                model_input.value = settings.anthropic_model or "claude-sonnet-5"
                                 base_url_input.value = ""
                                 base_url_input.disable()
                                 apikey_input.enable()
@@ -5585,7 +5585,7 @@ def extractor_page():
                         base_url_input.enable()
                         apikey_input.enable()
                     else:  # anthropic
-                        model_input.value = "claude-3-5-haiku-20241022"
+                        model_input.value = settings.anthropic_model or "claude-sonnet-5"
                         base_url_input.value = ""
                         base_url_input.disable()
                         apikey_input.enable()
