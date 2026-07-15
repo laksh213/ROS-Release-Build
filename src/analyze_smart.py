@@ -113,7 +113,7 @@ LLM_METRICS = {
     "api_cost": 0.0
 }
 
-def _update_metrics(sys_text: str, user_text: str, out_text: str):
+def _update_metrics(sys_text: str, user_text: str, out_text: str, username: str | None = None):
     try:
         in_tok = (len(sys_text) + len(user_text)) // 4
         out_tok = len(out_text) // 4
@@ -123,15 +123,15 @@ def _update_metrics(sys_text: str, user_text: str, out_text: str):
         LLM_METRICS["total_tokens"] += (in_tok + out_tok)
         LLM_METRICS["api_cost"] += cost
         
-        # Get the username from NiceGUI storage context if available
-        try:
-            from nicegui import app
-            if app.storage.user and app.storage.user.get("authenticated", False):
-                username = app.storage.user.get("username", "Guest")
-            else:
+        if not username:
+            try:
+                from nicegui import app
+                if app.storage.user and app.storage.user.get("authenticated", False):
+                    username = app.storage.user.get("username", "Guest")
+                else:
+                    username = "system"
+            except Exception:
                 username = "system"
-        except Exception:
-            username = "system"
             
         # Update user-specific metrics in SQLite dynamically
         import sqlite3
@@ -158,9 +158,10 @@ def _update_metrics(sys_text: str, user_text: str, out_text: str):
         pass
 
 def _chat(system_text: str, user_text: str, max_tokens: int = 4096, json_mode: bool = False,
-          provider: str | None = None, model: str | None = None, api_key: str | None = None) -> str:
+          provider: str | None = None, model: str | None = None, api_key: str | None = None,
+          username: str | None = None) -> str:
     res = _chat_raw(system_text, user_text, max_tokens, json_mode, provider, model, api_key)
-    _update_metrics(system_text, user_text, res)
+    _update_metrics(system_text, user_text, res, username)
     return res
 
 def _chat_raw(system_text: str, user_text: str, max_tokens: int = 4096, json_mode: bool = False,
@@ -245,12 +246,13 @@ def _chat_raw(system_text: str, user_text: str, max_tokens: int = 4096, json_mod
 
 
 def stream_chat(system_text: str, user_text: str, max_tokens: int = 4096, json_mode: bool = False,
-                provider: str | None = None, model: str | None = None, api_key: str | None = None):
+                provider: str | None = None, model: str | None = None, api_key: str | None = None,
+                username: str | None = None):
     out_tokens_list = []
     for token in _stream_chat_raw(system_text, user_text, max_tokens, json_mode, provider, model, api_key):
         out_tokens_list.append(token)
         yield token
-    _update_metrics(system_text, user_text, "".join(out_tokens_list))
+    _update_metrics(system_text, user_text, "".join(out_tokens_list), username)
 
 
 def _stream_chat_raw(system_text: str, user_text: str, max_tokens: int = 4096, json_mode: bool = False,
@@ -480,7 +482,8 @@ def clean_academic_synthesis(text: str) -> str:
 
 
 def analyze_text(case_no: str, full_text: str, progress_callback: Callable[[float, str, str | None], None] | None = None,
-                 doc_kind: str = "SC judgment", provider: str | None = None, model: str | None = None, api_key: str | None = None) -> CaseAnalysis:
+                 doc_kind: str = "SC judgment", provider: str | None = None, model: str | None = None, api_key: str | None = None,
+                 username: str | None = None) -> CaseAnalysis:
     """Run the decomposed 3-step pipeline with Chain-of-Thought scratchpads."""
     typology = _TYPOLOGY_RULES.get(doc_kind, _TYPOLOGY_RULES["SC judgment"])
     prompts = load_smart_prompts()
@@ -504,7 +507,7 @@ def analyze_text(case_no: str, full_text: str, progress_callback: Callable[[floa
     )
     
     step1_raw = ""
-    for chunk in stream_chat(step1_sys, step1_user, max_tokens=8000, json_mode=True, provider=provider, model=model, api_key=api_key):
+    for chunk in stream_chat(step1_sys, step1_user, max_tokens=8000, json_mode=True, provider=provider, model=model, api_key=api_key, username=username):
         step1_raw += chunk
         if progress_callback:
             progress_callback(0.10, "Step 1 of 3: Extracting facts and key legal issues", chunk)
@@ -526,7 +529,7 @@ def analyze_text(case_no: str, full_text: str, progress_callback: Callable[[floa
     )
     
     step2_raw = ""
-    for chunk in stream_chat(step2_sys, step2_user, max_tokens=8000, json_mode=True, provider=provider, model=model, api_key=api_key):
+    for chunk in stream_chat(step2_sys, step2_user, max_tokens=8000, json_mode=True, provider=provider, model=model, api_key=api_key, username=username):
         step2_raw += chunk
         if progress_callback:
             progress_callback(0.40, "Step 2 of 3: Analyzing ratio decidendi, deciding factors, and precedents", chunk)
@@ -560,7 +563,7 @@ def analyze_text(case_no: str, full_text: str, progress_callback: Callable[[floa
     )
     
     step3_raw = ""
-    for chunk in stream_chat(step3_sys, step3_user, max_tokens=3000, json_mode=True, provider=provider, model=model, api_key=api_key):
+    for chunk in stream_chat(step3_sys, step3_user, max_tokens=3000, json_mode=True, provider=provider, model=model, api_key=api_key, username=username):
         step3_raw += chunk
         if progress_callback:
             progress_callback(0.70, "Step 3 of 3: Comparing notes", chunk)
@@ -598,7 +601,7 @@ def analyze_text(case_no: str, full_text: str, progress_callback: Callable[[floa
                 "bullets, no 'Date:'/'Event:' labels, no headings, and no facts that are "
                 "not in the notes. Return only the paragraphs.",
                 json.dumps(fm, ensure_ascii=False)[:4000], max_tokens=700,
-                provider=provider, model=model, api_key=api_key)
+                provider=provider, model=model, api_key=api_key, username=username)
             prose = re.sub(r"<think(?:ing)?>.*?</think(?:ing)?>", "", prose, flags=re.DOTALL).strip()
             if len(prose) > 60:
                 step1_data["factual_matrix"] = prose
@@ -751,14 +754,16 @@ def _doc_kind_for(case_no: str) -> str:
 
 
 def analyze_pdf(pdf_path: str, progress_callback: Callable[[float, str], None] | None = None,
-                doc_kind: str = "SC judgment", provider: str | None = None, model: str | None = None, api_key: str | None = None) -> CaseAnalysis:
+                doc_kind: str = "SC judgment", provider: str | None = None, model: str | None = None, api_key: str | None = None,
+                username: str | None = None) -> CaseAnalysis:
     pages = extract_pages(pdf_path, ocr_langs=settings.tesseract_langs)
     text = "\n".join(f"===== Page {i} =====\n{t}" for i, t in enumerate(pages, 1))
-    return analyze_text(case_no_from_filename(pdf_path), text, progress_callback, doc_kind=doc_kind, provider=provider, model=model, api_key=api_key)
+    return analyze_text(case_no_from_filename(pdf_path), text, progress_callback, doc_kind=doc_kind, provider=provider, model=model, api_key=api_key, username=username)
 
 
 def analyze_case(case_no: str, force: bool = False, progress_callback: Callable[[float, str], None] | None = None,
-                 provider: str | None = None, model: str | None = None, api_key: str | None = None) -> CaseAnalysis:
+                 provider: str | None = None, model: str | None = None, api_key: str | None = None,
+                 username: str | None = None) -> CaseAnalysis:
     """Cached or on-demand smart analysis using decomposed pipeline."""
     from . import store
 
@@ -789,7 +794,7 @@ def analyze_case(case_no: str, force: bool = False, progress_callback: Callable[
         else:
             raise FileNotFoundError(f"Judgement PDF not found: {pdf_path} (tried fallback: {fallback})")
 
-    ca = analyze_pdf(pdf_path, progress_callback, doc_kind=_doc_kind_for(case_no), provider=provider, model=model, api_key=api_key)
+    ca = analyze_pdf(pdf_path, progress_callback, doc_kind=_doc_kind_for(case_no), provider=provider, model=model, api_key=api_key, username=username)
     p_provider = provider or settings.llm_provider
     p_model = model or (settings.anthropic_model if p_provider.lower() == "anthropic" else settings.llm_model)
     if not ca.quality()["hollow"]:

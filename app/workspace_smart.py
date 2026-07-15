@@ -698,10 +698,10 @@ def record_funnel_event(stage: str):
 
 def get_funnel_counts() -> dict:
     default_counts = {
-        "portal_hits": 148,
-        "judgments_opened": 96,
-        "questions_submitted": 56,
-        "analyses_generated": 22
+        "portal_hits": 0,
+        "judgments_opened": 0,
+        "questions_submitted": 0,
+        "analyses_generated": 0
     }
     try:
         con = _con()
@@ -1653,6 +1653,7 @@ _TREAT_COLOR = {"Distinguished": "orange", "Overruled": "red", "Applied": "green
 
 
 def build_workspace(demo: bool = False, initial_case: str = None):
+    record_funnel_event("portal_hits")
     _tokens = (Path(__file__).parent / "design_tokens.css").read_text()
     ui.add_head_html(f"<style>{_tokens}</style>")
     ui.add_head_html(HEAD_CSS)
@@ -2450,13 +2451,14 @@ def build_workspace(demo: bool = False, initial_case: str = None):
                         # Step 1: Use local model (Llama.cpp) to refine and expand search terms
                         status_lbl.text = "Refining legal search terms..."
                         expanded_query = query
+                        username = app.storage.user.get("username") or "system"
                         try:
                             local_sys = ("You are a legal research assistant. Extract 3-5 key legal terms "
                                          "or statutory references from the user query. Output ONLY a "
                                          "comma-separated list of terms, nothing else.")
                             local_usr = f"User query: {query}"
                             from src.analyze_smart import stream_chat
-                            iterator_local = stream_chat(local_sys, local_usr, provider="llamacpp", model=settings.llamacpp_model_path, max_tokens=100)
+                            iterator_local = stream_chat(local_sys, local_usr, provider="llamacpp", model=settings.llamacpp_model_path, max_tokens=100, username=username)
                             local_terms = ""
                             while True:
                                 token = await run.io_bound(next, iterator_local, None)
@@ -2512,7 +2514,7 @@ def build_workspace(demo: bool = False, initial_case: str = None):
                         from src.analyze_smart import stream_chat
                         prov = "llamacpp" if force_local else None
                         mdl = settings.llamacpp_model_path if force_local else None
-                        iterator = stream_chat(sys_p, usr_p, provider=prov, model=mdl)
+                        iterator = stream_chat(sys_p, usr_p, provider=prov, model=mdl, username=username)
                         full_text = ""
                         first_token = True
                         while True:
@@ -2804,7 +2806,8 @@ def build_workspace(demo: bool = False, initial_case: str = None):
             provider = app.storage.user.get("llm_provider")
             model = app.storage.user.get("llm_model")
             api_key = app.storage.user.get("custom_api_key")
-            ca = await run.io_bound(analyze_case, cn, True, on_progress, provider, model, api_key)
+            username = app.storage.user.get("username")
+            ca = await run.io_bound(analyze_case, cn, True, on_progress, provider, model, api_key, username)
             # Record deep analysis generated
             record_funnel_event("analyses_generated")
             q = ca.quality()
@@ -3007,8 +3010,8 @@ def build_workspace(demo: bool = False, initial_case: str = None):
         if history_str:
             user_text += f"Conversation history so far:\n{history_str}\n"
         user_text += f"Latest User Question: {query}"
-
-        for token in stream_chat(system_text, user_text, provider=provider, model=model, api_key=api_key):
+        username = app.storage.user.get("username")
+        for token in stream_chat(system_text, user_text, provider=provider, model=model, api_key=api_key, username=username):
             yield token
 
     @ui.refreshable
