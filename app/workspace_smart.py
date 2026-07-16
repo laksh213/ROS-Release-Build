@@ -2462,7 +2462,10 @@ def build_workspace(demo: bool = False, initial_case: str = None):
                                          "comma-separated list of terms, nothing else.")
                             local_usr = f"User query: {query}"
                             from src.analyze_smart import stream_chat
-                            iterator_local = stream_chat(local_sys, local_usr, provider="llamacpp", model=settings.llamacpp_model_path, max_tokens=100, username=username)
+                            prov = app.storage.user.get("llm_provider") or "llamacpp"
+                            mdl = app.storage.user.get("llm_model") or settings.llamacpp_model_path
+                            akey = app.storage.user.get("custom_api_key")
+                            iterator_local = stream_chat(local_sys, local_usr, provider=prov, model=mdl, api_key=akey, max_tokens=100, username=username)
                             local_terms = ""
                             while True:
                                 token = await run.io_bound(next, iterator_local, None)
@@ -2470,9 +2473,10 @@ def build_workspace(demo: bool = False, initial_case: str = None):
                                     break
                                 local_terms += token
                             local_terms = local_terms.strip()
-                            if local_terms and "," in local_terms:
-                                expanded_query = f"{query} {local_terms.replace(',', ' ')}"
-                                print(f"Local AI Query Expansion: '{query}' -> '{expanded_query}'")
+                            if local_terms:
+                                cleaned_terms = local_terms.replace(",", " ").replace("\n", " ").strip()
+                                expanded_query = f"{query} {cleaned_terms}"
+                                print(f"AI Query Expansion: '{query}' -> '{expanded_query}'")
                         except Exception as lex:
                             print(f"Local query expansion warning: {lex}")
 
