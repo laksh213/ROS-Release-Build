@@ -2938,7 +2938,7 @@ def build_workspace(demo: bool = False, initial_case: str = None):
         reply = _chat(system_text, user_text, provider=provider, model=model, api_key=api_key)
         return reply
 
-    def stream_chatbot_api(cn, query, provider, model, api_key):
+    def stream_chatbot_api(cn, query, provider, model, api_key, username=None):
         # Record chatbot question submitted
         record_funnel_event("questions_submitted")
         from src.config import REPO_ROOT, settings
@@ -3010,7 +3010,6 @@ def build_workspace(demo: bool = False, initial_case: str = None):
         if history_str:
             user_text += f"Conversation history so far:\n{history_str}\n"
         user_text += f"Latest User Question: {query}"
-        username = app.storage.user.get("username")
         for token in stream_chat(system_text, user_text, provider=provider, model=model, api_key=api_key, username=username):
             yield token
 
@@ -3138,11 +3137,12 @@ def build_workspace(demo: bool = False, initial_case: str = None):
                     try:
                         messages.append({"role": "assistant", "content": ""})
                         last_refresh = time.monotonic()
-                        provider = app.storage.user.get("llm_provider")
-                        model = app.storage.user.get("llm_model")
+                        provider = app.storage.user.get("llm_provider") or "llamacpp"
+                        model = app.storage.user.get("llm_model") or settings.llamacpp_model_path
                         api_key = app.storage.user.get("custom_api_key")
+                        username = app.storage.user.get("username")
                         if state.get("uploaded_doc_text"): text = f"Uploaded Doc Context:\n{state['uploaded_doc_text']}\n\nUser query: " + text
-                        iterator = stream_chatbot_api(cn, text, "llamacpp", "local-gguf", None)
+                        iterator = stream_chatbot_api(cn, text, provider, model, api_key, username)
                         while True:
                             chunk = await run.io_bound(next, iterator, None)
                             if chunk is None:
@@ -3242,10 +3242,11 @@ def build_workspace(demo: bool = False, initial_case: str = None):
                         try:
                             messages.append({"role": "assistant", "content": ""})
                             last_refresh = time.monotonic()
-                            provider = app.storage.user.get("llm_provider")
-                            model = app.storage.user.get("llm_model")
+                            provider = app.storage.user.get("llm_provider") or "llamacpp"
+                            model = app.storage.user.get("llm_model") or settings.llamacpp_model_path
                             api_key = app.storage.user.get("custom_api_key")
-                            iterator = stream_chatbot_api(cn, val, "llamacpp", "local-gguf", None)
+                            username = app.storage.user.get("username")
+                            iterator = stream_chatbot_api(cn, val, provider, model, api_key, username)
                             while True:
                                 chunk = await run.io_bound(next, iterator, None)
                                 if chunk is None:
