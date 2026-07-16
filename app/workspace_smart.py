@@ -2340,6 +2340,8 @@ def build_workspace(demo: bool = False, initial_case: str = None):
                     def on_clear_history():
                         app.storage.user["chat_history"] = []
                         messages_container.clear()
+                        state.pop("uploaded_doc_text", None)
+                        state.pop("uploaded_doc_name", None)
                         ui.notify("Chat history cleared", color="grey-7")
                     ui.button(icon="delete_sweep", on_click=on_clear_history).props("flat round dense color=white").classes("hover:bg-white/10").tooltip("Clear Chat History")
                     ui.button(icon="close", on_click=dialog.close).props("flat round dense color=white").classes("hover:bg-white/10")
@@ -2350,6 +2352,8 @@ def build_workspace(demo: bool = False, initial_case: str = None):
             # Load and render persistent session history
             def load_chat_history():
                 messages_container.clear()
+                state.pop("uploaded_doc_text", None)
+                state.pop("uploaded_doc_name", None)
                 history = app.storage.user.get("chat_history", [])
                 for msg in history:
                     if msg["role"] == "user":
