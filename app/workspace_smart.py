@@ -4447,11 +4447,15 @@ def build_workspace(demo: bool = False, initial_case: str = None):
                                         
                                         # Resolve fallback keys for API-driven providers
                                         active_key = apikey_input.value
+                                        is_cur_admin = (app.storage.user.get("username") or "").lower() == "admin"
                                         if not active_key:
-                                            if provider_sel.value == "anthropic":
-                                                active_key = settings.anthropic_api_key
-                                            elif provider_sel.value == "openai":
-                                                active_key = settings.openai_api_key
+                                            if is_cur_admin:
+                                                if provider_sel.value == "anthropic":
+                                                    active_key = settings.anthropic_api_key
+                                                elif provider_sel.value == "openai":
+                                                    active_key = settings.openai_api_key
+                                            else:
+                                                raise RuntimeError("API Key is required for non-admin accounts.")
 
                                         try:
                                             meta = await run.io_bound(
